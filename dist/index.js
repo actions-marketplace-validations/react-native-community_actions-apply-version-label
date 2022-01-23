@@ -8929,17 +8929,25 @@ const versionLabel = "Version: ";
 const versionTitlesInMarkdown = ["Version", "New Version"];
 const rnInfoTitleInMarkdown = "Output of `react-native info`";
 const labelForNoVersion = "Version: unspecified";
+function isTokenWithText(token) {
+    return !!(token === null || token === void 0 ? void 0 : token.text);
+}
 const getVersionFromIssueBody = (issueBody) => {
     let versionFromIssueBody = "";
     // Parse the markdown from the issue body
     const markdownSection = marked_1.marked.lexer(issueBody);
     // Loop through all sections
     for (const markdownSectionIndex in markdownSection) {
+        // Skip sections that don't contain text
+        const currentSection = markdownSection[markdownSectionIndex];
+        if (!isTokenWithText(currentSection)) {
+            continue;
+        }
         // If this section matches `versionTitleInMarkdown`
-        if (versionTitlesInMarkdown.includes(markdownSection[markdownSectionIndex].text)) {
+        if (versionTitlesInMarkdown.includes(currentSection.text)) {
             // Then the version can be found in the next section
             const specifiedVersion = markdownSection[Number(markdownSectionIndex) + 1];
-            if (!specifiedVersion.text) {
+            if (!isTokenWithText(specifiedVersion)) {
                 continue;
             }
             const parsedVersion = (0, parse_1.default)(specifiedVersion.text);
@@ -8950,11 +8958,10 @@ const getVersionFromIssueBody = (issueBody) => {
             break;
         }
         // If this section matches `rnInfoTitleInMarkdown`
-        if (markdownSection[markdownSectionIndex].text ===
-            rnInfoTitleInMarkdown) {
+        if (currentSection.text === rnInfoTitleInMarkdown) {
             // Then the version can be found in the next section
             const rnInfoOutput = markdownSection[Number(markdownSectionIndex) + 1];
-            if (!rnInfoOutput.text) {
+            if (!isTokenWithText(rnInfoOutput)) {
                 continue;
             }
             const rnInfoRNPart = rnInfoOutput.text.match(/react-native:(.+?)=>/);
@@ -9001,6 +9008,10 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
         repo: issue.repo,
         issue_number: issue.number,
     });
+    if (labels.every(({ name }) => name !== "pre-release")) {
+        core.debug("Issue not tagged with pre-release");
+        return;
+    }
     // Loop through all labels and remove the version label if it exists
     // and is not the same as the version from the issue body
     try {

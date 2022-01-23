@@ -8,6 +8,14 @@ const versionTitlesInMarkdown = ["Version", "New Version"];
 const rnInfoTitleInMarkdown = "Output of `react-native info`";
 const labelForNoVersion = "Version: unspecified";
 
+type TokenWithText = {
+  text: string;
+};
+
+function isTokenWithText(token: any): token is TokenWithText {
+  return !!token?.text;
+}
+
 const getVersionFromIssueBody = (issueBody: string) => {
   let versionFromIssueBody = "";
 
@@ -16,17 +24,19 @@ const getVersionFromIssueBody = (issueBody: string) => {
 
   // Loop through all sections
   for (const markdownSectionIndex in markdownSection) {
+    // Skip sections that don't contain text
+    const currentSection = markdownSection[markdownSectionIndex];
+    if (!isTokenWithText(currentSection)) {
+      continue;
+    }
+
     // If this section matches `versionTitleInMarkdown`
-    if (
-      versionTitlesInMarkdown.includes(
-        (markdownSection[markdownSectionIndex] as any).text
-      )
-    ) {
+    if (versionTitlesInMarkdown.includes(currentSection.text)) {
       // Then the version can be found in the next section
-      const specifiedVersion: any =
+      const specifiedVersion =
         markdownSection[Number(markdownSectionIndex) + 1];
 
-      if (!specifiedVersion.text) {
+      if (!isTokenWithText(specifiedVersion)) {
         continue;
       }
 
@@ -42,15 +52,11 @@ const getVersionFromIssueBody = (issueBody: string) => {
     }
 
     // If this section matches `rnInfoTitleInMarkdown`
-    if (
-      (markdownSection[markdownSectionIndex] as any).text ===
-      rnInfoTitleInMarkdown
-    ) {
+    if (currentSection.text === rnInfoTitleInMarkdown) {
       // Then the version can be found in the next section
-      const rnInfoOutput: any =
-        markdownSection[Number(markdownSectionIndex) + 1];
+      const rnInfoOutput = markdownSection[Number(markdownSectionIndex) + 1];
 
-      if (!rnInfoOutput.text) {
+      if (!isTokenWithText(rnInfoOutput)) {
         continue;
       }
 
@@ -116,6 +122,12 @@ const init = async () => {
     repo: issue.repo,
     issue_number: issue.number,
   });
+
+  if (labels.every(({ name }) => name !== "pre-release")) {
+    core.debug("Issue not tagged with pre-release");
+
+    return;
+  }
 
   // Loop through all labels and remove the version label if it exists
   // and is not the same as the version from the issue body
