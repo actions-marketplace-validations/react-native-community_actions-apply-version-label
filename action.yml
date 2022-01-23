@@ -1,5 +1,5 @@
-name: "Apply version label to issue"
-description: "Automatically apply a version label to issues."
+name: "Apply version label to pre-release issue"
+description: "Automatically apply a version label to issues tagged with pre-release."
 
 branding:
   icon: "tag"
