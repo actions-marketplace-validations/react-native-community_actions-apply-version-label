@@ -1,15 +1,15 @@
-const core = require("@actions/core");
-const github = require("@actions/github");
-const marked = require("marked");
-const semverParse = require("semver/functions/parse");
+import * as core from "@actions/core";
+import * as github from "@actions/github";
+import { marked } from "marked";
+import semverParse from "semver/functions/parse";
 
 const versionLabel = "Version: ";
 const versionTitlesInMarkdown = ["Version", "New Version"];
 const rnInfoTitleInMarkdown = "Output of `react-native info`";
 const labelForNoVersion = "Version: unspecified";
 
-const getVersionFromIssueBody = (issueBody) => {
-  let versionFromIssueBody;
+const getVersionFromIssueBody = (issueBody: string) => {
+  let versionFromIssueBody = "";
 
   // Parse the markdown from the issue body
   const markdownSection = marked.lexer(issueBody);
@@ -19,11 +19,11 @@ const getVersionFromIssueBody = (issueBody) => {
     // If this section matches `versionTitleInMarkdown`
     if (
       versionTitlesInMarkdown.includes(
-        markdownSection[markdownSectionIndex].text
+        (markdownSection[markdownSectionIndex] as any).text
       )
     ) {
       // Then the version can be found in the next section
-      const specifiedVersion =
+      const specifiedVersion: any =
         markdownSection[Number(markdownSectionIndex) + 1];
 
       if (!specifiedVersion.text) {
@@ -42,9 +42,13 @@ const getVersionFromIssueBody = (issueBody) => {
     }
 
     // If this section matches `rnInfoTitleInMarkdown`
-    if (markdownSection[markdownSectionIndex].text === rnInfoTitleInMarkdown) {
+    if (
+      (markdownSection[markdownSectionIndex] as any).text ===
+      rnInfoTitleInMarkdown
+    ) {
       // Then the version can be found in the next section
-      const rnInfoOutput = markdownSection[Number(markdownSectionIndex) + 1];
+      const rnInfoOutput: any =
+        markdownSection[Number(markdownSectionIndex) + 1];
 
       if (!rnInfoOutput.text) {
         continue;
@@ -62,7 +66,7 @@ const getVersionFromIssueBody = (issueBody) => {
         continue;
       }
 
-      versionFromIssueBody = versionFromRnInfoPart;
+      versionFromIssueBody = versionFromRnInfoPart.version;
 
       break;
     }
@@ -71,13 +75,14 @@ const getVersionFromIssueBody = (issueBody) => {
   return versionFromIssueBody;
 };
 
-const getLabelToBeApplied = (version) =>
+const getLabelToBeApplied = (version: string) =>
   version ? `${versionLabel}${version}` : labelForNoVersion;
 
 // Look for a version on the issue body
-const getIsIssueLabelAVersion = (label) => label.startsWith(versionLabel);
+const getIsIssueLabelAVersion = (label: string) =>
+  label.startsWith(versionLabel);
 
-(async () => {
+const init = async () => {
   const githubToken = core.getInput("github-token", { required: true });
   const octokit = github.getOctokit(githubToken);
 
@@ -97,6 +102,11 @@ const getIsIssueLabelAVersion = (label) => label.startsWith(versionLabel);
     return;
   }
 
+  if (!updatedIssue.body) {
+    core.debug("No description provided");
+    return;
+  }
+
   const versionFromIssueBody = getVersionFromIssueBody(updatedIssue.body);
   const labelToBeApplied = getLabelToBeApplied(versionFromIssueBody);
 
@@ -110,24 +120,26 @@ const getIsIssueLabelAVersion = (label) => label.startsWith(versionLabel);
   // Loop through all labels and remove the version label if it exists
   // and is not the same as the version from the issue body
   try {
-    await Promise.all(labels.map(({ name }) => {
-      const isLabelAVersion = getIsIssueLabelAVersion(name);
+    await Promise.all(
+      labels.map(({ name }) => {
+        const isLabelAVersion = getIsIssueLabelAVersion(name);
 
-      if (!isLabelAVersion || name === labelToBeApplied) {
-        return;
-      }
+        if (!isLabelAVersion || name === labelToBeApplied) {
+          return;
+        }
 
-      return octokit.rest.issues.removeLabel({
-        owner: issue.owner,
-        repo: issue.repo,
-        issue_number: issue.number,
-        name,
-      });
-    }));
+        return octokit.rest.issues.removeLabel({
+          owner: issue.owner,
+          repo: issue.repo,
+          issue_number: issue.number,
+          name,
+        });
+      })
+    );
   } catch (error) {
     core.error(error);
 
-    core.setFailed("Failed to remove version labels")
+    core.setFailed("Failed to remove version labels");
   }
 
   try {
@@ -148,6 +160,8 @@ const getIsIssueLabelAVersion = (label) => label.startsWith(versionLabel);
   } catch (error) {
     core.error(error);
 
-    core.setFailed(`Label ${labelToBeApplied} doesn't seem to exist`)
+    core.setFailed(`Label ${labelToBeApplied} doesn't seem to exist`);
   }
-})();
+};
+
+init();
