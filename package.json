@@ -1,5 +1,5 @@
 {
-  "name": "core-workflow-apply-version-label",
+  "name": "actions-apply-version-label",
   "version": "0.0.1",
   "author": {
     "name": "Lucas Bento",
@@ -20,7 +20,7 @@
     "typescript": "^4.5.5"
   },
   "license": "MIT",
-  "repository": "https://github.com/react-native-community/core-workflow-apply-version-label",
+  "repository": "https://github.com/react-native-community/actions-apply-version-label",
   "scripts": {
     "build": "ncc build src/index.ts --out ./dist",
     "build:watch": "yarn build -w",
