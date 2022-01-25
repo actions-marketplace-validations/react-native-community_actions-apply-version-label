@@ -8983,6 +8983,7 @@ const getLabelToBeApplied = (version) => version ? `${versionLabel}${version}` :
 const getIsIssueLabelAVersion = (label) => label.startsWith(versionLabel);
 const init = () => __awaiter(void 0, void 0, void 0, function* () {
     const githubToken = core.getInput("github-token", { required: true });
+    const requiredLabel = core.getInput("required-label", { required: true });
     const octokit = github.getOctokit(githubToken);
     const { issue } = github.context;
     // This fetches the issue again as it can have different data after running the other actions
@@ -9008,8 +9009,8 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
         repo: issue.repo,
         issue_number: issue.number,
     });
-    if (labels.every(({ name }) => name !== "pre-release")) {
-        core.debug("Issue not tagged with pre-release");
+    if (labels.every(({ name }) => name !== requiredLabel)) {
+        core.debug(`Issue not tagged with ${requiredLabel}`);
         return;
     }
     // Loop through all labels and remove the version label if it exists

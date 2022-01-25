@@ -90,6 +90,7 @@ const getIsIssueLabelAVersion = (label: string) =>
 
 const init = async () => {
   const githubToken = core.getInput("github-token", { required: true });
+  const requiredLabel = core.getInput("required-label", { required: true });
   const octokit = github.getOctokit(githubToken);
 
   const { issue } = github.context;
@@ -123,8 +124,8 @@ const init = async () => {
     issue_number: issue.number,
   });
 
-  if (labels.every(({ name }) => name !== "pre-release")) {
-    core.debug("Issue not tagged with pre-release");
+  if (labels.every(({ name }) => name !== requiredLabel)) {
+    core.debug(`Issue not tagged with ${requiredLabel}`);
 
     return;
   }
