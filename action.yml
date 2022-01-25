@@ -1,4 +1,4 @@
-name: "Apply version label to issue"
+name: "Apply version label to issue with specific label"
 description: "Automatically apply a version label to issues tagged with a specific label."
 
 branding:
