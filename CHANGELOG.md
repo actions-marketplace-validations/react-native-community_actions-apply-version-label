@@ -1,3 +1,12 @@
+## [0.0.3](https://github.com/react-native-community/actions-apply-version-label/compare/v0.0.2...v0.0.3) (2022-01-27)
+
+
+### Features
+
+* Update action to show a warning instead of throwing an error when label is missing ([233f086](https://github.com/react-native-community/actions-apply-version-label/commit/233f0861c1de9e651fea01cc15def095b903919c))
+
+
+
 ## [0.0.2](https://github.com/react-native-community/actions-apply-version-label/compare/v0.0.1...v0.0.2) (2022-01-25)
 
 
