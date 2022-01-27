@@ -171,9 +171,7 @@ const init = async () => {
       labels: [labelToBeApplied],
     });
   } catch (error) {
-    core.error(error);
-
-    core.setFailed(`Label ${labelToBeApplied} doesn't seem to exist`);
+    core.warning(`Label ${labelToBeApplied} doesn't seem to exist`);
   }
 };
 

@@ -9049,8 +9049,7 @@ const init = () => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
     catch (error) {
-        core.error(error);
-        core.setFailed(`Label ${labelToBeApplied} doesn't seem to exist`);
+        core.warning(`Label ${labelToBeApplied} doesn't seem to exist`);
     }
 });
 init();
