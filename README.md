@@ -15,7 +15,7 @@ GitHub workflow used by the [React Native](https://github.com/facebook/react-nat
 ## Example
 
 ```
-- uses: react-native-community/actions-apply-version-label@v0.0.1
+- uses: react-native-community/actions-apply-version-label@v0.0.3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           required-label: "Type: Upgrade Issue"
